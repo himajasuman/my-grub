@@ -4,40 +4,55 @@ import { Link } from "gatsby";
 import queryString from 'query-string';
 import Layout from "../components/layout";
 import './restaurant.css';
-import restaurantsData from '../data';
 
+const apikey = '919a6002f8818a307f814ca1402a9ff2'; // put you api key here
 class RestaurantPage extends React.Component {
+  constructor() {
+    super();
+
+    this.state = {};
+  }
+
+  componentWillMount() {
+    const res_id = queryString.parse(this.props.location.search).id;
+
+    fetch(`https://developers.zomato.com/api/v2.1/restaurant?res_id=${res_id}`,  {
+      method: 'GET',
+      headers: {
+        'accept': 'application/json',
+        'user-key': apikey
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      this.setState({
+        restaurantDetails: data
+      });
+    });
+  }
 
   render() {
-
-    const res_id = queryString.parse(this.props.location.search).id;
-    const restaurantDetails = restaurantsData
-      .restaurants
-      .find(({restaurant}) => restaurant.id === res_id )
-      .restaurant;
-
-
     return (
       <Layout>
       {
-        restaurantDetails ?
+        this.state.restaurantDetails ?
         <div className="restraunt">
           <div className="restraunt-header">
-            <img src={restaurantDetails.thumb}></img>
+            <img src={this.state.restaurantDetails.thumb}></img>
             <div>
-              <h4>{restaurantDetails.name}</h4>
+              <h4>{this.state.restaurantDetails.name}</h4>
               <i></i>
-              <p> {restaurantDetails.location.address} </p>
-              <h5>{restaurantDetails.timings}</h5>
+              <p> {this.state.restaurantDetails.location.address} </p>
+              <h5>{this.state.restaurantDetails.timings}</h5>
             </div>
             <span className="ratings">
-              {restaurantDetails.user_rating.aggregate_rating}
+              {this.state.restaurantDetails.user_rating.aggregate_rating}
             </span>
           </div>
           <div className="images">
             <h4>Images</h4>
             {
-              restaurantDetails.photos.slice(0, 10).map(
+              this.state.restaurantDetails.photos.slice(0, 10).map(
                 ({photo}, index) => (
                   <img key={`restaurant${index}`} src={photo.thumb_url}/>
                 )
